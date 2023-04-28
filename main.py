@@ -12,28 +12,13 @@ from math import cos, sin
 
 import math
 
-from numba import jit
+# from numba import jit
 
 import time
 
-from scipy.interpolate import interp1d
+# from scipy.interpolate import interp1d
 
 AIR_THICKNESS = 2
-
-
-def interpolate(xy, uv) -> object:
-    x, y = zip(xy)
-    xi, yi = zip(uv)
-
-    interp_x = interp1d(x, xi)
-    interp_y = interp1d(y, yi)
-
-    def interp(xy):
-        return interp_x(xy[0]), interp_y(xy[1])
-
-    return interp
-
-# @jit
 
 
 def rotate(vert, xyz) -> list:
