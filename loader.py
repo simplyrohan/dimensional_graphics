@@ -55,5 +55,5 @@ def get_faces(path: str) -> list:
 
     return faces
 
-with open("faces.txt", "w") as f:
-    f.write(str(get_faces("Gun.obj")))
+def load(file):
+    return get_faces(file)
