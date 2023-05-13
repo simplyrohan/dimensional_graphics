@@ -14,6 +14,7 @@ Camera:
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;objs: A list of all `Models` to be rendered.
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Methods:
+
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;render(screen): Pass a surface to render all objects (every frame)
 
 Model: 
