@@ -16,6 +16,8 @@ import math
 
 import time
 
+import .loader
+
 # from scipy.interpolate import interp1d
 
 AIR_THICKNESS = 2
