@@ -16,7 +16,7 @@ import math
 
 import time
 
-import .loader
+from . import loader
 
 # from scipy.interpolate import interp1d
 
