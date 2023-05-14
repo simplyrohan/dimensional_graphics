@@ -3,7 +3,7 @@ A pygame 3D renderer.
 
 # Install
 ```bash
-git clone https://github.com/simply-rohan/dimensional_graphics.git
+git clone https://github.com/simplyrohan/dimensional_graphics.git
 ```
 
 # Usage
