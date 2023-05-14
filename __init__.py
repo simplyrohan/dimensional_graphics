@@ -12,13 +12,8 @@ from math import cos, sin
 
 import math
 
-# from numba import jit
-
-import time
-
 from . import loader
 
-# from scipy.interpolate import interp1d
 
 AIR_THICKNESS = 2
 
@@ -114,20 +109,15 @@ class Camera:
         # NOTE: very fast; 3/4 microseconds per iteration
         for face, highest_z in faces:
             # Projection
-            start = time.time()
-
             projected_points = [
                 [i + 250 for i in self.project(p)] for p in face]
 
             # Shading
-            start = time.time()
-
             color = obj.color
 
-            # Light Source
-            light = [0, 0, 100]
+            light = [0, 0, 100]  # Light Source
 
-            mpoint = [0, 0, 0]
+            mpoint = [0, 0, 0]  # Average of all points
             for point in face:
                 mpoint = [v+point[i] for i, v in enumerate(point)]
             mpoint = [i/len(face) for i in mpoint]
@@ -137,14 +127,8 @@ class Camera:
             dist *= AIR_THICKNESS  # Light to shade factor
 
             color = [pygame.math.clamp(i+dist, 0, 200) for i in color]
-            """
-            x, y = zip(projected_points)
-
-            surface = pygame.Surface((max(x)-min(x), max(y)-min(y)))
-            """
 
             # Drawing
-            start = time.time()
             pygame.draw.polygon(screen, color, projected_points)
 
     def project(self, point) -> tuple:
