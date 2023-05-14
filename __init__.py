@@ -109,18 +109,7 @@ class Camera:
                 faces.append([true_face, highest_z])
 
         # Z-Sorting
-        # NOTE: slow; 352 ms
-
-        def quick_sort(array):
-            if len(array) < 2:
-                return array
-            else:
-                pivot = array[0]
-                less = [i for i in array[1:] if i[1] >= pivot[1]]
-                greater = [i for i in array[1:] if i[1] < pivot[1]]
-                return quick_sort(less) + [pivot] + quick_sort(greater)
-
-        faces = quick_sort(faces)
+        faces = sorted(faces, key=lambda face: face[1], reverse=True)
 
         # NOTE: very fast; 3/4 microseconds per iteration
         for face, highest_z in faces:
