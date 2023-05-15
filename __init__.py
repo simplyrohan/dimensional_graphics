@@ -22,6 +22,7 @@ def rotate(vert, xyz) -> list:
     """
     Rotates given vertex on the X, Y, and Z dimensions.
     """
+    """
     x, y, z = xyz
     x_matrix = np.array([[1, 0, 0], [0, cos(x), -sin(x)], [0, sin(x), cos(x)]])
 
@@ -31,9 +32,14 @@ def rotate(vert, xyz) -> list:
 
     arr = np.array(vert)
 
-    return [
-        round(i) for i in arr@x_matrix@y_matrix@z_matrix
-    ]
+    return [round(i) for i in arr @ x_matrix @ y_matrix @ z_matrix]
+    """
+    x, y, z = xyz
+    v = pygame.Vector3(vert)
+    v.rotate_x_ip(x)
+    v.rotate_y_ip(y)
+    v.rotate_z_ip(z)
+    return v
 
 
 class Model:
@@ -86,13 +92,15 @@ class Camera:
                     true_point = rotate(point, obj.rotation)
                     # Position
 
-                    true_point = [a+obj.position[ai]
-                                  for ai, a in enumerate(true_point)]
+                    true_point = [
+                        a + obj.position[ai] for ai, a in enumerate(true_point)
+                    ]
 
                     # Camera transforms
 
-                    true_point = [a+self.position[ai]
-                                  for ai, a in enumerate(true_point)]
+                    true_point = [
+                        a + self.position[ai] for ai, a in enumerate(true_point)
+                    ]
 
                     true_point = rotate(true_point, self.rotation)
 
@@ -109,8 +117,7 @@ class Camera:
         # NOTE: very fast; 3/4 microseconds per iteration
         for face, highest_z in faces:
             # Projection
-            projected_points = [
-                [i + 250 for i in self.project(p)] for p in face]
+            projected_points = [[i + 250 for i in self.project(p)] for p in face]
 
             # Shading
             color = obj.color
@@ -119,14 +126,14 @@ class Camera:
 
             mpoint = [0, 0, 0]  # Average of all points
             for point in face:
-                mpoint = [v+point[i] for i, v in enumerate(point)]
-            mpoint = [i/len(face) for i in mpoint]
+                mpoint = [v + point[i] for i, v in enumerate(point)]
+            mpoint = [i / len(face) for i in mpoint]
 
             dist = math.dist(mpoint, light) - 120
 
             dist *= AIR_THICKNESS  # Light to shade factor
 
-            color = [pygame.math.clamp(i+dist, 0, 200) for i in color]
+            color = [pygame.math.clamp(i + dist, 0, 200) for i in color]
 
             # Drawing
             pygame.draw.polygon(screen, color, projected_points)
