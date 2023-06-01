@@ -5,18 +5,11 @@ This uses raw math to project and texture your own models.
 """
 
 import pygame
-
-import numpy as np
-
-from math import cos, sin
-
 import math
 
-from . import loader
+from .loader import load
 
-
-AIR_THICKNESS = 2
-
+AIR_THICKNESS = 1.25
 
 def rotate(vert, xyz) -> list:
     """
@@ -34,12 +27,9 @@ def rotate(vert, xyz) -> list:
 
     return [round(i) for i in arr @ x_matrix @ y_matrix @ z_matrix]
     """
-    x, y, z = xyz
-    v = pygame.Vector3(vert)
-    v.rotate_x_ip(x)
-    v.rotate_y_ip(y)
-    v.rotate_z_ip(z)
-    return v
+    vert.rotate_x_ip(xyz[0])
+    vert.rotate_y_ip(xyz[1])
+    vert.rotate_z_ip(xyz[2])
 
 
 class Model:
@@ -51,10 +41,10 @@ class Model:
             for face in self.raw_faces
         ]
 
-        self.position = [0, 0, 0]
-        self.rotation = [0, 0, 0]
+        self.position = pygame.Vector3([0, 0, 0])
+        self.rotation = pygame.Vector3([0, 0, 0])
 
-        self.color = (200, 125, 130)
+        self.color = (54, 104, 143)
 
 
 class Camera:
@@ -76,9 +66,10 @@ class Camera:
         """
         self.objs = objs  # A pointer to a list of `Models`
 
-        self.position = [0, 0, 0]  # The physical position of the camera
-        self.rotation = [0, 0, 0]  # The physical rotation of the camera
-
+        self.position = pygame.Vector3([0, 0, 0])  # The physical position of the camera
+        self.rotation = pygame.Vector3([0, 0, 0])  # The physical rotation of the camera
+    
+    # @profile
     def render(self, screen) -> None:
         # Transformations
         faces = []
@@ -89,32 +80,45 @@ class Camera:
                 for point in face:
                     # Local transforms
                     # Rotation
-                    true_point = rotate(point, obj.rotation)
+                    true_point = pygame.Vector3(point)
+                    rotate(true_point, obj.rotation)
                     # Position
-
-                    true_point = [
-                        a + obj.position[ai] for ai, a in enumerate(true_point)
-                    ]
+                    true_point = true_point + obj.position - self.position
 
                     # Camera transforms
-
-                    true_point = [
-                        a + self.position[ai] for ai, a in enumerate(true_point)
-                    ]
-
-                    true_point = rotate(true_point, self.rotation)
-
+                    rotate(true_point, self.rotation)
                     zs.append(true_point[2])
-                    true_face.append(true_point)
 
-                highest_z = min(zs)
 
-                faces.append([true_face, highest_z])
+                    true_face.append([a+250 for a in self.project(true_point)])
+                faces.append([true_face, min(zs)])
+                # color = obj.color
+                # pygame.draw.polygon(screen, color, true_face)
+        faces = sorted(faces, key=lambda v: v[1], reverse=True)
+        print(len(faces))
+        for face, z in faces:
+            if z != 1.1:
+                color = obj.color
 
+                light = [0, 0, 100]  # Light Source
+
+                dist = abs(100-z)-50
+                # print(dist)
+
+                dist *= AIR_THICKNESS  # Light to shade factor
+
+                color = [pygame.math.clamp(i + dist, 0, 250) for i in color]
+
+                # print(color)
+                        
+                pygame.draw.polygon(screen, color, face)
+                # highest_z = min(zs)
+
+                # faces.append([true_face, highest_z])
+        
         # Z-Sorting
-        faces = sorted(faces, key=lambda face: face[1], reverse=True)
-
-        # NOTE: very fast; 3/4 microseconds per iteration
+        # faces = sorted(faces, key=lambda face: face[1], reverse=True)
+    """
         for face, highest_z in faces:
             # Projection
             projected_points = [[i + 250 for i in self.project(p)] for p in face]
@@ -137,24 +141,10 @@ class Camera:
 
             # Drawing
             pygame.draw.polygon(screen, color, projected_points)
-
-    def project(self, point) -> tuple:
-        x, y, z = point
-        y -= 70
-        try:
-            x_projected = (x * self.focal_length) / (self.focal_length + z)
-        except ZeroDivisionError:
-            x_projected = x
-
-        try:
-            y_projected = (-y * self.focal_length) / (self.focal_length + z)
-        except ZeroDivisionError:
-            y_projected = -y
-
+    """
+    def project(self, point: list[int, int, int]) -> tuple:
+        # TODO: Do not use try/except to sole ZeroDiv. It is slow. Implement culling
+        x_projected: float = (point[0] * self.focal_length) // (self.focal_length + point[2])
+        y_projected: float = -(point[1] * self.focal_length) // (self.focal_length + point[2])
         return x_projected, y_projected
 
-
-CUBE_MODEL = [
-    [[-0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]],
-    [[-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5]],
-]
