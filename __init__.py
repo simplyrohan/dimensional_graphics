@@ -5,19 +5,16 @@ This uses raw math to project and texture your own models.
 """
 
 import pygame
-import math
-from .math_utils import project, rotate
 
 from .loader import load
 
 AIR_THICKNESS = 1.25
 
-"""
 def rotate(vert, xyz) -> list:
-    \"\"\"
+    """
     Rotates given vertex on the X, Y, and Z dimensions.
-    \"\"\"
-    \"\"\"
+    """
+    """
     x, y, z = xyz
     x_matrix = np.array([[1, 0, 0], [0, cos(x), -sin(x)], [0, sin(x), cos(x)]])
 
@@ -28,12 +25,11 @@ def rotate(vert, xyz) -> list:
     arr = np.array(vert)
 
     return [round(i) for i in arr @ x_matrix @ y_matrix @ z_matrix]
-    \"\"\"
+    """
 
     vert.rotate_x_ip(xyz[0])
     vert.rotate_y_ip(xyz[1])
     vert.rotate_z_ip(xyz[2])
-"""
 
 
 class Model:
@@ -93,7 +89,7 @@ class Camera:
                     rotate(true_point, self.rotation)
                     zs.append(true_point[2])
 
-                    true_face.append([a + 250 for a in project(true_point)])
+                    true_face.append([a + 250 for a in self.project(true_point)])
                 faces.append([true_face, min(zs)])
                 # color = obj.color
                 # pygame.draw.polygon(screen, color, true_face)
@@ -115,7 +111,7 @@ class Camera:
                 # print(color)
 
                 pygame.draw.polygon(screen, color, face)
-                pygame.draw.polygon(screen, "black", face, 2)
+                # pygame.draw.polygon(screen, "black", face, 2)
                 # highest_z = min(zs)
 
                 # faces.append([true_face, highest_z])
@@ -157,9 +153,3 @@ class Camera:
             self.focal_length + point[2]
         )
         return x_projected, y_projected
-
-
-CUBE_MODEL = [
-    [[-0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]],
-    [[-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5]],
-]
