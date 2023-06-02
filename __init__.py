@@ -6,16 +6,18 @@ This uses raw math to project and texture your own models.
 
 import pygame
 import math
+from .math_utils import project, rotate
 
 from .loader import load
 
 AIR_THICKNESS = 1.25
 
+"""
 def rotate(vert, xyz) -> list:
-    """
+    \"\"\"
     Rotates given vertex on the X, Y, and Z dimensions.
-    """
-    """
+    \"\"\"
+    \"\"\"
     x, y, z = xyz
     x_matrix = np.array([[1, 0, 0], [0, cos(x), -sin(x)], [0, sin(x), cos(x)]])
 
@@ -26,10 +28,12 @@ def rotate(vert, xyz) -> list:
     arr = np.array(vert)
 
     return [round(i) for i in arr @ x_matrix @ y_matrix @ z_matrix]
-    """
+    \"\"\"
+
     vert.rotate_x_ip(xyz[0])
     vert.rotate_y_ip(xyz[1])
     vert.rotate_z_ip(xyz[2])
+"""
 
 
 class Model:
@@ -68,7 +72,7 @@ class Camera:
 
         self.position = pygame.Vector3([0, 0, 0])  # The physical position of the camera
         self.rotation = pygame.Vector3([0, 0, 0])  # The physical rotation of the camera
-    
+
     # @profile
     def render(self, screen) -> None:
         # Transformations
@@ -89,8 +93,7 @@ class Camera:
                     rotate(true_point, self.rotation)
                     zs.append(true_point[2])
 
-
-                    true_face.append([a+250 for a in self.project(true_point)])
+                    true_face.append([a + 250 for a in project(true_point)])
                 faces.append([true_face, min(zs)])
                 # color = obj.color
                 # pygame.draw.polygon(screen, color, true_face)
@@ -102,7 +105,7 @@ class Camera:
 
                 light = [0, 0, 100]  # Light Source
 
-                dist = abs(100-z)-50
+                dist = abs(100 - z) - 50
                 # print(dist)
 
                 dist *= AIR_THICKNESS  # Light to shade factor
@@ -110,14 +113,16 @@ class Camera:
                 color = [pygame.math.clamp(i + dist, 0, 250) for i in color]
 
                 # print(color)
-                        
+
                 pygame.draw.polygon(screen, color, face)
+                pygame.draw.polygon(screen, "black", face, 2)
                 # highest_z = min(zs)
 
                 # faces.append([true_face, highest_z])
-        
+
         # Z-Sorting
         # faces = sorted(faces, key=lambda face: face[1], reverse=True)
+
     """
         for face, highest_z in faces:
             # Projection
@@ -142,9 +147,19 @@ class Camera:
             # Drawing
             pygame.draw.polygon(screen, color, projected_points)
     """
+
     def project(self, point: list[int, int, int]) -> tuple:
         # TODO: Do not use try/except to sole ZeroDiv. It is slow. Implement culling
-        x_projected: float = (point[0] * self.focal_length) // (self.focal_length + point[2])
-        y_projected: float = -(point[1] * self.focal_length) // (self.focal_length + point[2])
+        x_projected: float = (point[0] * self.focal_length) // (
+            self.focal_length + point[2]
+        )
+        y_projected: float = -(point[1] * self.focal_length) // (
+            self.focal_length + point[2]
+        )
         return x_projected, y_projected
 
+
+CUBE_MODEL = [
+    [[-0.5, -0.5, 0.5], [0.5, 0.5, 0.5], [-0.5, 0.5, 0.5]],
+    [[-0.5, -0.5, 0.5], [0.5, -0.5, 0.5], [0.5, 0.5, 0.5]],
+]
