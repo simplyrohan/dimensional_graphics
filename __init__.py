@@ -57,23 +57,21 @@ class Camera:
 
     focal_length = 100
 
-    def __init__(self, objs) -> None:
+    def __init__(self) -> None:
         """
         Initializes a physical and virtual camera instance, and specifies all camera information.
 
         Args:
             objs: A pointer to a list of `Models` to be drawn.
         """
-        self.objs = objs  # A pointer to a list of `Models`
-
         self.position = pygame.Vector3([0, 0, 0])  # The physical position of the camera
         self.rotation = pygame.Vector3([0, 0, 0])  # The physical rotation of the camera
 
     # @profile
-    def render(self, screen) -> None:
+    def render(self, objects, screen) -> None:
         # Transformations
         faces = []
-        for obj in self.objs:
+        for obj in objects:
             for face in obj.faces:
                 true_face = []
                 zs = []
