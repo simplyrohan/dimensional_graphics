@@ -6,7 +6,7 @@ This uses raw math to project and texture your own models.
 
 import pygame
 from math import asin, atan2, degrees
-from loader import load
+from .loader import load
 
 AIR_THICKNESS = 1.25
 
