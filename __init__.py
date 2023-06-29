@@ -113,7 +113,7 @@ class Camera:
         self.rotation = pygame.Vector3([0, 0, 0])  # The physical rotation of the camera
         self.forward = pygame.Vector3([0, 0, 1])
 
-    def render(self, objects, screen) -> None:
+    def render(self, objects: list, screen: pygame.Surface) -> None:
         # Transformations
         self.forward.normalize_ip()
         pitch, yaw = degrees(asin(self.forward.y)), degrees(
@@ -143,8 +143,10 @@ class Camera:
                     true_point.rotate_y_ip(yaw)
                     true_point.rotate_x_ip(pitch)
                     zs.append(true_point[2])
+                    
+                    projected = self.project(true_point)
 
-                    true_face.append([a + 250 for a in self.project(true_point)])
+                    true_face.append([projected[0]+screen.get_width(), projected[1]+screen.get_height()])
                 faces.append([true_face, min(zs), uvs, obj.texture])
 
         faces = sorted(faces, key=lambda v: v[1], reverse=True)
