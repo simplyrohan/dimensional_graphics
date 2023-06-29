@@ -119,7 +119,6 @@ class Camera:
         pitch, yaw = degrees(asin(self.forward.y)), degrees(
             atan2(self.forward.x, self.forward.z)
         )
-        print(yaw)
         faces = []
         for obj in objects:
             for face in obj.faces:
