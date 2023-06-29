@@ -55,8 +55,6 @@ def get_faces(path: str) -> list:
             for ind in edge:
                 i,u = ind
                 point = points[int(i)-1]
-                print(len(uvs))
-                print(int(u)-1)
                 uv = uvs[int(u)-1]
                 
                 face.append(point+uv)
