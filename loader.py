@@ -6,7 +6,8 @@ def get_points(data: list):
             if split_line[0] == "v":
                 points.append([float(i) for i in split_line[1:]])
         except IndexError:
-            print("Found Line Break!")
+            # print("Found Line Break!")
+            pass
 
     return points
 
@@ -18,33 +19,47 @@ def get_edges(data):
         try:
             if split_line[0] == "f":
                 inds = split_line[1:]
-                inds = [i.split("/")[0] for i in inds]
+                inds = [i.split("/")[:2] for i in inds]
                 edges.append(inds)
         except IndexError:
-            print("Found Line Break!")
+            pass
+            # print("Found Line Break!")
 
     return edges
 
+def get_uvs(data):
+    points = []
+    for line in data:
+        split_line = line.split()
+        try:
+            if split_line[0] == "vt":
+                points.append([float(i) for i in split_line[1:3]])
+        except IndexError:
+            pass
+            # print("Found Line Break!")
+    if not points:
+        points = [(0, 0), (1, 0), (0, 1)]
+    return points
 
 def get_faces(path: str) -> list:
     with open(path, "r") as file:
         lines = file.readlines()
         points = get_points(lines)
         edges = get_edges(lines)
-
-        print(len(points))
+        uvs = get_uvs(lines)
 
         faces = []
 
         for edge in edges:
             face = []
             for ind in edge:
-                print(int(ind))
-                print("LEN:", (len(points)))
-
-                point = points[int(ind)-1]
-
-                face.append(point)
+                i,u = ind
+                point = points[int(i)-1]
+                print(len(uvs))
+                print(int(u)-1)
+                uv = uvs[int(u)-1]
+                
+                face.append(point+uv)
             
             faces.append(face)
         
