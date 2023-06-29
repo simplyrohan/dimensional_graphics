@@ -146,7 +146,7 @@ class Camera:
                     
                     projected = self.project(true_point)
 
-                    true_face.append([projected[0]+screen.get_width(), projected[1]+screen.get_height()])
+                    true_face.append([projected[0]+screen.get_width()/2, projected[1]+screen.get_height()/2])
                 faces.append([true_face, min(zs), uvs, obj.texture])
 
         faces = sorted(faces, key=lambda v: v[1], reverse=True)
