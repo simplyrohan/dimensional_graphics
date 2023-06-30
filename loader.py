@@ -37,32 +37,32 @@ def get_uvs(data):
         except IndexError:
             pass
             # print("Found Line Break!")
-    if not points:
-        points = [(0, 0), (1, 0), (0, 1)]
     return points
 
 def get_faces(path: str) -> list:
+    
     with open(path, "r") as file:
         lines = file.readlines()
         points = get_points(lines)
         edges = get_edges(lines)
         uvs = get_uvs(lines)
-
+        
         faces = []
-
+        default_uv = [[0, 0], [1, 0], [0, 1]]
         for edge in edges:
             face = []
-            for ind in edge:
-                i,u = ind
-                point = points[int(i)-1]
-                uv = uvs[int(u)-1]
-                
+            for i, ind in enumerate(edge):
+                if len(ind) > 1:
+                    i,u = ind
+                    point = points[int(i)-1]
+                    uv = uvs[int(u)-1]
+                else:
+                    point = points[int(ind[0])-1]
+                    uv = default_uv[i]
                 face.append(point+uv)
-            
             faces.append(face)
         
         # faces = faces[::10]
-
 
 
 
