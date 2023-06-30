@@ -29,7 +29,7 @@ clock = pygame.time.Clock()
 camera = Camera()
 
 size = 10
-model = Model(load('path_to_file.obj', size)
+model = Model(load('path_to_file.obj'), size)
 
 running = True
 while running:
