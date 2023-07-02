@@ -92,6 +92,12 @@ class Model:
         self.texture = pygame.Surface((1, 1))
         self.texture.fill((150, 150, 150))
 
+    
+    def copy(self):
+        m = Model([], 0)
+        m.__dict__ = self.__dict__
+        return m
+
 
 class Camera:
     """
