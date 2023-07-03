@@ -157,7 +157,7 @@ class Camera:
 
         faces = sorted(faces, key=lambda v: v[1], reverse=True)
         for face, z, uvs, texture in faces:
-            if z > -self.focal_length:
+            if z > 0:
                 draw(screen, face, uvs, texture)
                 # pygame.draw.polygon(screen, (0,0,0), face, 2)
     def project(self, point: list[int, int, int]) -> tuple:
