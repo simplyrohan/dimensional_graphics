@@ -17,7 +17,7 @@ git clone https://github.com/simplyrohan/dimensional_graphics.git
 
 # Usage
 ```py
-from dimensional_graphics import Camera, Model, load
+from dimensional_graphics import render, Model, load
 import pygame
 pygame.init()
 
@@ -42,7 +42,7 @@ while running:
     screen.fill((255, 255, 255)) # Background Color
 
     # Your game
-    camera.render([model], screen)
+    render([model], screen)
 
     pygame.display.flip()
     clock.tick(60) # Change this to FPS
