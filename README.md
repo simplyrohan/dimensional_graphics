@@ -1,5 +1,5 @@
-# Dimensional
-A ✨pure Python and Pygame✨ 3D library.
+# dimensional_graphics
+A ✨pure Python and Pygame✨ 3D renderer.
 
 # Highlights
 🚀 Is optimized to handle to large scenes 
