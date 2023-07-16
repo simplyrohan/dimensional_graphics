@@ -6,7 +6,7 @@ This uses raw math to project and texture your own models.
 
 import pygame
 from math import asin, atan2, degrees
-from .loader import load
+from loader import load
 
 def safe_tri(lst):
     return len(lst) == len(set(lst))
@@ -29,7 +29,7 @@ def cart_to_bary(cart: tuple[int, int], triangle: list[tuple, tuple, tuple]):
     denominator = y2y3 * x0x2 + x3x2 * (triangle[0][1] - triangle[2][1])
 
     if denominator == 0:
-        return (0, 0, 0)
+        return False
     
     b1 = (y2y3 * xx2 + x3x2 * yy2) / denominator
 
@@ -37,17 +37,23 @@ def cart_to_bary(cart: tuple[int, int], triangle: list[tuple, tuple, tuple]):
 
     return (b1, b2, 1 - b1 - b2)
 
-def get_pixel(point: tuple, triangle: list, uvs: list, texture: pygame.Surface):
+def get_pixel(point: tuple, triangle: list, uvs: list, texture: pygame.Surface, buffer, px, py, zs):
     bbary = cart_to_bary(point, triangle)
-    if bbary == (0, 0, 0):
-        return (0, 0, 0, 0)
+    if not bbary:
+        return False
     if bbary[0] >= 0 and bbary[1] >= 0 and bbary[2] >= 0:
+        z = zs[0]*bbary[0] + zs[1]*bbary[1] + zs[2]+bbary[1]
+        x, y = int(point[0]+px), int(point[1]+py)
+        if buffer[x][y] < z:
+            return False
+        buffer[x][y] = z
+        
+        
         v = bary_to_cart(bbary, uvs)
         return texture.get_at((int(v[0]), int(v[1])))
-    else:
-        return (0, 0, 0, 0)
+    return False
 
-def draw(screen: pygame.Surface, triangle: list, uvs: list, texture: pygame.Surface):
+def draw(screen: pygame.Surface, triangle: list, uvs: list, texture: pygame.Surface, buffer, zs):
     x, y = zip(*triangle)
     size = max(x) - min(x), max(y) - min(y)
     x, y = min(x), min(y)
@@ -59,9 +65,13 @@ def draw(screen: pygame.Surface, triangle: list, uvs: list, texture: pygame.Surf
         return
 
     tri = pygame.Surface(size).convert_alpha()  # Doesn't cause segfault
+    tri.fill((0, 0, 0, 0))
     pa = pygame.PixelArray(tri)  # Doesn't cause segfault
     for r, row in enumerate(pa):
-        for c in range(len(row)): pa[r][c] = get_pixel((r, c), triangle, uvs, texture)
+        for c in range(len(row)):
+            pix = get_pixel((r, c), triangle, uvs, texture, buffer, x, y, zs)
+            if pix:
+                pa[r][c] = pix
         # row[:] = [get_pixel((r, i), triangle, uvs, texture) for i in range(len(row))]
     pa.close()
     screen.blit(tri, (x, y))
@@ -122,6 +132,7 @@ class Camera:
     # @profile
     def render(self, objects: list, screen: pygame.Surface) -> None:
         # Transformations
+        buffer = [[float("inf") for _ in range(500)] for _ in range(500)]
         self.forward.normalize_ip()
         pitch, yaw = degrees(asin(self.forward.y)), degrees(
             atan2(self.forward.x, self.forward.z)
@@ -153,16 +164,16 @@ class Camera:
                     projected = self.project(true_point)
 
                     true_face.append((projected[0]+screen.get_width()/2, projected[1]+screen.get_height()/2))
-                faces.append([true_face, min(zs), uvs, obj.texture])
+                faces.append([true_face, zs, uvs, obj.texture])
 
-        faces = sorted(faces, key=lambda v: v[1], reverse=True)
+        # faces = sorted(faces, key=lambda v: min(v[1]), reverse=True)
         for face, z, uvs, texture in faces:
-            if z > 0:
-                draw(screen, face, uvs, texture)
+            if min(z) > 0:
+                draw(screen, face, uvs, texture, buffer, z)
                 # pygame.draw.polygon(screen, (0,0,0), face, 2)
     def project(self, point: list[int, int, int]) -> tuple:
         # TODO: Do not use try/except to sole ZeroDiv. It is slow. Implement culling
         z = self.focal_length+point[2]
-        x_projected: float = (point[0] * self.focal_length) // z
-        y_projected: float = -(point[1] * self.focal_length) // z
+        x_projected: float = -(point[0] * self.focal_length) // z
+        y_projected: float = (point[1] * self.focal_length) // z
         return x_projected, y_projected
