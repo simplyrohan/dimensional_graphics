@@ -6,7 +6,7 @@ This uses raw math to project and texture your own models.
 
 import pygame
 from math import asin, atan2, degrees, tan
-from loader import load
+from .loader import load
 
 
 def safe_tri(lst):
@@ -136,7 +136,7 @@ class Camera:
             (screen.get_height() / 2) / tan(self.fov / 2)
         )
 
-        buffer = [[float("inf") for _ in range(500)] for _ in range(500)]
+        buffer = [[float("inf") for _ in range(screen.get_height())] for _ in range(screen.get_width())]
         self.forward.normalize_ip()
         pitch, yaw = degrees(asin(self.forward.y)), degrees(
             atan2(self.forward.x, self.forward.z)
