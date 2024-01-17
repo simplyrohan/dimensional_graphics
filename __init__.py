@@ -41,7 +41,6 @@ def cart_to_bary(cart: tuple[int, int], triangle: list[tuple, tuple, tuple]):
     return [b1, b2, 1 - b1 - b2]
 
 
-
 def draw_triangle(
     screen,
     triangle: list[tuple[float, float]],
@@ -57,9 +56,9 @@ def draw_triangle(
     triangle = [(point[0] - tx, point[1] - ty) for point in triangle]
     rz = min(zs)
     for i, z in enumerate(zs):
-        zs[i] = 1/z
+        zs[i] = 1 / z
         z = z / rz
-        uvs[i] = (uvs[i][0] /z, uvs[i][1] /z)
+        uvs[i] = (uvs[i][0] / z, uvs[i][1] / z)
     tsurf = pygame.Surface((tw, th)).convert_alpha()
     tsurf.fill((0, 0, 0, 0))
     for x in range(tsurf.get_width()):
@@ -68,12 +67,12 @@ def draw_triangle(
             bary = cart_to_bary((x, y), triangle)
             if (bary is False) or (bary[0] < 0 or bary[1] < 0 or bary[2] < 0):
                 continue
-            z = 1/(bary[0] * zs[0] + bary[1] * zs[1] + bary[2] * zs[2])
+            z = 1 / (bary[0] * zs[0] + bary[1] * zs[1] + bary[2] * zs[2])
             if buffer[int(x + tx)][int(y + ty)] > z:
                 buffer[int(x + tx)][int(y + ty)] = z
                 uv = bary_to_cart(bary, uvs)
-                uv[0] = uv[0]*(z/rz)
-                uv[1] = uv[1]*(z/rz)
+                uv[0] = uv[0] * (z / rz)
+                uv[1] = uv[1] * (z / rz)
                 uv = int(uv[0] * (texture.get_width() - 1)), int(
                     uv[1] * (texture.get_height() - 1)
                 )
@@ -85,40 +84,6 @@ def draw_triangle(
     screen.blit(tsurf, (tx, ty))
 
 
-def old(
-    screen,
-    triangle: list[tuple[float, float]],
-    zs: list[float, float, float],
-    uvs: list[tuple[float, float]],
-    buffer: list[list[float]],
-    texture: pygame.Surface,
-):
-    txs, tys = zip(*triangle)
-    tx, ty = min(txs), min(tys)
-    tw, th = max(txs) - tx, max(tys) - ty
-
-    triangle = [(point[0] - tx, point[1] - ty) for point in triangle]
-    tsurf = pygame.Surface((tw, th)).convert_alpha()
-    tsurf.fill((0, 0, 0, 0))
-    for x in range(tsurf.get_width()):
-        for y in range(tsurf.get_height()):
-            # Get Pixel Value
-            bary = cart_to_bary((x, y), triangle)
-            if (bary is False) or (bary[0] < 0 or bary[1] < 0 or bary[2] < 0):
-                continue
-            z = bary[0] * zs[0] + bary[1] * zs[1] + bary[2] * zs[2]
-            if buffer[int(x + tx)][int(y + ty)] > z:
-                buffer[int(x + tx)][int(y + ty)] = z
-                uv = bary_to_cart(bary, uvs)
-                uv = int(uv[0] * (texture.get_width() - 1)), int(
-                    uv[1] * (texture.get_height() - 1)
-                )
-                try:
-                    tsurf.set_at((x, y), texture.get_at(uv))
-                except IndexError:
-                    print("oop")
-
-    screen.blit(tsurf, (tx, ty))
 def rotate(vert, xyz) -> list:
     """
     Rotates given vertex on the X, Y, and Z dimensions.
@@ -172,13 +137,16 @@ class Camera:
         self.forward = pygame.Vector3([0, 0, 1])
 
     # @profile
-    def render(self, objects: list, screen: pygame.Surface, t) -> None:
+    def render(self, objects: list, screen: pygame.Surface) -> None:
         # Transformations
         xf, yf = -((screen.get_width() / 2) / tan(self.fov / 2)), -(
             (screen.get_height() / 2) / tan(self.fov / 2)
         )
 
-        buffer = [[float("inf") for _ in range(screen.get_height())] for _ in range(screen.get_width())]
+        buffer = [
+            [float("inf") for _ in range(screen.get_height())]
+            for _ in range(screen.get_width())
+        ]
         self.forward.normalize_ip()
         pitch, yaw = degrees(asin(self.forward.y)), degrees(
             atan2(self.forward.x, self.forward.z)
@@ -216,10 +184,7 @@ class Camera:
                     )
 
                 if min(zs) > 0:
-                    if t:
-                        old(screen, true_face, zs, uvs, buffer, obj.texture)
-                    else:
-                        draw_triangle(screen, true_face, zs, uvs, buffer, obj.texture)
+                    draw_triangle(screen, true_face, zs, uvs, buffer, obj.texture)
 
     def project(self, point: list[int, int, int], xf, yf) -> tuple:
         # TODO: Do not use try/except to sole ZeroDiv. It is slow. Implement culling
