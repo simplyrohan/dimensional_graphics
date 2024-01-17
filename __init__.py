@@ -14,10 +14,10 @@ def safe_tri(lst):
 
 
 def bary_to_cart(bary, triangle):
-    return (
+    return [
         bary[0] * triangle[0][0] + bary[1] * triangle[1][0] + bary[2] * triangle[2][0],
         bary[0] * triangle[0][1] + bary[1] * triangle[1][1] + bary[2] * triangle[2][1],
-    )
+    ]
 
 
 def cart_to_bary(cart: tuple[int, int], triangle: list[tuple, tuple, tuple]):
@@ -38,10 +38,54 @@ def cart_to_bary(cart: tuple[int, int], triangle: list[tuple, tuple, tuple]):
 
     b2 = ((triangle[2][1] - triangle[0][1]) * xx2 + x0x2 * yy2) / denominator
 
-    return (b1, b2, 1 - b1 - b2)
+    return [b1, b2, 1 - b1 - b2]
+
 
 
 def draw_triangle(
+    screen,
+    triangle: list[tuple[float, float]],
+    zs: list[float, float, float],
+    uvs: list[tuple[float, float]],
+    buffer: list[list[float]],
+    texture: pygame.Surface,
+):
+    txs, tys = zip(*triangle)
+    tx, ty = min(txs), min(tys)
+    tw, th = max(txs) - tx, max(tys) - ty
+
+    triangle = [(point[0] - tx, point[1] - ty) for point in triangle]
+    rz = min(zs)
+    for i, z in enumerate(zs):
+        zs[i] = 1/z
+        z = z / rz
+        uvs[i] = (uvs[i][0] /z, uvs[i][1] /z)
+    tsurf = pygame.Surface((tw, th)).convert_alpha()
+    tsurf.fill((0, 0, 0, 0))
+    for x in range(tsurf.get_width()):
+        for y in range(tsurf.get_height()):
+            # Get Pixel Value
+            bary = cart_to_bary((x, y), triangle)
+            if (bary is False) or (bary[0] < 0 or bary[1] < 0 or bary[2] < 0):
+                continue
+            z = 1/(bary[0] * zs[0] + bary[1] * zs[1] + bary[2] * zs[2])
+            if buffer[int(x + tx)][int(y + ty)] > z:
+                buffer[int(x + tx)][int(y + ty)] = z
+                uv = bary_to_cart(bary, uvs)
+                uv[0] = uv[0]*(z/rz)
+                uv[1] = uv[1]*(z/rz)
+                uv = int(uv[0] * (texture.get_width() - 1)), int(
+                    uv[1] * (texture.get_height() - 1)
+                )
+                try:
+                    tsurf.set_at((x, y), texture.get_at(uv))
+                except IndexError:
+                    print("oop")
+
+    screen.blit(tsurf, (tx, ty))
+
+
+def old(
     screen,
     triangle: list[tuple[float, float]],
     zs: list[float, float, float],
@@ -75,8 +119,6 @@ def draw_triangle(
                     print("oop")
 
     screen.blit(tsurf, (tx, ty))
-
-
 def rotate(vert, xyz) -> list:
     """
     Rotates given vertex on the X, Y, and Z dimensions.
@@ -130,7 +172,7 @@ class Camera:
         self.forward = pygame.Vector3([0, 0, 1])
 
     # @profile
-    def render(self, objects: list, screen: pygame.Surface) -> None:
+    def render(self, objects: list, screen: pygame.Surface, t) -> None:
         # Transformations
         xf, yf = -((screen.get_width() / 2) / tan(self.fov / 2)), -(
             (screen.get_height() / 2) / tan(self.fov / 2)
@@ -141,7 +183,6 @@ class Camera:
         pitch, yaw = degrees(asin(self.forward.y)), degrees(
             atan2(self.forward.x, self.forward.z)
         )
-        faces = []
         for obj in objects:
             for face in obj.faces:
                 true_face = []
@@ -173,13 +214,12 @@ class Camera:
                             projected[1] + screen.get_height() / 2,
                         )
                     )
-                faces.append([true_face, zs, uvs, obj.texture])
 
-        # faces = sorted(faces, key=lambda v: min(v[1]), reverse=True)
-        for face, z, uvs, texture in faces:
-            if min(z) > 0:
-                draw_triangle(screen, face, z, uvs, buffer, texture)
-                # pygame.draw.polygon(screen, (0,0,0), face, 2)
+                if min(zs) > 0:
+                    if t:
+                        old(screen, true_face, zs, uvs, buffer, obj.texture)
+                    else:
+                        draw_triangle(screen, true_face, zs, uvs, buffer, obj.texture)
 
     def project(self, point: list[int, int, int], xf, yf) -> tuple:
         # TODO: Do not use try/except to sole ZeroDiv. It is slow. Implement culling
